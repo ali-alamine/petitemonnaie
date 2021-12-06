@@ -5,9 +5,9 @@ var mysql = require('mysql');
 
 var connection = mysql.createConnection({
       host     : 'localhost',
-      user     : 'petitem',
-      password : 'U<U[{Bc+C!3sdRn2{{2t}?#m',
-      database : 'sicomex_stores_new'
+      user     : 'root',//'petitem',
+      password : '',//'U<U[{Bc+C!3sdRn2{{2t}?#m',
+      database : 'sicomex-stores-new'
 });
 
 connection.connect(function(err) {

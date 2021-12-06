@@ -148,7 +148,7 @@ Invoice.deleteInvoice = function (invoice_data, result) {
 Invoice.payInvoice = function (invoice_data, result) {
     sql.beginTransaction(function (err) {
         if (err) { throw err; }
-        var sqlQuery = "UPDATE INVOICE SET is_paid = 1 WHERE invoice_id = " + invoice_data.invoice_id;
+        var sqlQuery = "UPDATE invoice SET is_paid = 1 WHERE invoice_id = " + invoice_data.invoice_id;
 
         sql.query(sqlQuery, function (err, res) {
             if (err) {
