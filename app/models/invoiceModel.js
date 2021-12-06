@@ -72,7 +72,7 @@ Invoice.getInvoices = function (result) {
 Invoice.updateInvoice = function (invoice_data, result) {
     sql.beginTransaction(function (err) {
         if (err) { throw err; }
-        var sqlQuery = 'UPDATE invoice SET invoice_number = ' + "'" + invoice_data.edit_invoice_number + "'" + ',store_id = ' + "'" + invoice_data.store_id + "'" + ',supplier_id = ' + "'" + invoice_data.supplier_id + "'" + ',invoice_date = ' + "'" + invoice_data.edit_invoice_date + "'" + ',invoice_amount= ' + "'" + invoice_data.edit_invoice_amount + "'" + " WHERE invoice_id = " + "'" + invoice_data.invoice_id + "'";
+        var sqlQuery = 'UPDATE invoice SET invoice_number = ' + "'" + invoice_data.edit_invoice_number + "'" + ',store_id = ' + "'" + invoice_data.store_id + "'" + ',supplier_id = ' + "'" + invoice_data.supplier_id  + ',invoice_amount= ' + "'" + invoice_data.edit_invoice_amount + "'" + " WHERE invoice_id = " + "'" + invoice_data.invoice_id + "'";
         sql.query(sqlQuery, function (err, res) {
             if (err) {
                 sql.rollback(function () {
