@@ -77,7 +77,7 @@ function dynamicQueryForStoreBankAcc(data, table_name, date_field_name) {
 
     if (table_name == 'store_entry') {
 
-        sqlQuery = 'SELECT * FROM store_entry WHERE store_id= ' + data.store_id;
+        sqlQuery = 'SELECT * FROM store_entry WHERE bank_deposit > 0 and store_id= ' + data.store_id;
         if (data.date_from != 'Invalid date') {
             sqlCondition = sqlCondition + ' AND date(' + date_field_name + ') >= ' + "'" + data.date_from + "'" + ' ';
         }
