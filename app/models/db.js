@@ -3,6 +3,13 @@
 var mysql = require('mysql');
 //local mysql db connection
 
+// var connection = mysql.createConnection({
+//       host     : 'localhost',
+//       user     : 'root',
+//       password : '',
+//       database : 'sicomex-stores-new'
+// });
+
 var connection = mysql.createConnection({
   host     : 'localhost',
   user     : 'petitem',

@@ -132,7 +132,7 @@ Supplier.getSupplierAccount = function (supplier_id,result){
 
     sql.beginTransaction(function(err){
 
-        sql.query('SELECT * FROM invoice WHERE supplier_id= ' + supplier_id + ' AND check_id IS NOT null ORDER BY invoice_date DESC LIMIT 50',function(err,res1){
+        sql.query('SELECT * FROM invoice WHERE supplier_id= ' + supplier_id + ' and is_paid = 0 ORDER BY invoice_date DESC LIMIT 50',function(err,res1){
             if(err){
                 sql.rollback(function() {
                     throw err;
