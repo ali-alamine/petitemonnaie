@@ -236,18 +236,23 @@ Invoice.payPartialInvoiceAmount = function (invoice_data, result) {
                                     throw err;
                                 });
                             } else {
-                                let payment_data={'invoice_id':invoice_data.invoice_id,'payment_amount':invoice_data.amount_to_pay,'payment_date':invoice_data}
-                                sql.query('INSERT INTO invoice_payment SET ?',)
-
-
-                                sql.commit(function (err) {
+                                let payment_data={'invoice_id':invoice_data.invoice_id,'payment_amount':invoice_data.amount_to_pay,'payment_date':invoice_data.invoice_date }
+                                sql.query('INSERT INTO invoice_payment SET ?',payment_data, function(){
                                     if (err) {
                                         sql.rollback(function () {
                                             throw err;
                                         });
+                                    }else{
+                                        sql.commit(function (err) {
+                                            if (err) {
+                                                sql.rollback(function () {
+                                                    throw err;
+                                                });
+                                            }
+                                            result(null, res);
+                                        });
                                     }
-                                    result(null, res);
-                                });
+                                })
                             }
                         });
                     }

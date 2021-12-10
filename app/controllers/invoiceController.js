@@ -17,7 +17,7 @@ exports.add_new_invoice = function (req, res) {
 exports.pay_invoice = function (req, res) {
     var request = req.body;
     console.log(req.body);
-    var invoice_data = { "payments":request.payments,"store_id": request.store_id,"amount_paid":request.amount_paid, "check_id": request.check_id, "supplier_amount": request.supplier_amount, "invoice_amount": request.invoice_amount, "invoice_id": request.invoice_id, "supplier_id": request.supplier_id };
+    var invoice_data = { "payments":request.payments,"store_id": request.store_id,"amount_paid":request.amount_paid, "check_id": request.check_id, "supplier_amount": request.supplier_amount, "invoice_amount": request.invoice_amount, "invoice_id": request.invoice_id, "supplier_id": request.supplier_id,"invoice_date":request.invoice_date };
     if (request.check_id != null) {
 
         res.send('INVOICE_IS_ASSIGNED_TO_A_CHECK');
