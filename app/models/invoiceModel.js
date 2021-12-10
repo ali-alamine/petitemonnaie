@@ -362,6 +362,7 @@ Invoice.advancedSearchInvoice = function (data, result) {
     var sqlQuery = '';
     var sql_and = '';
     var sql_order = '';
+    console.log(data)
     sqlQuery = 'SELECT inv.*, sup.*, st.* from invoice as inv LEFT join supplier as sup on inv.supplier_id = sup.supplier_id LEFT JOIN store as st on inv.store_id = st.store_id WHERE 1';
 
     if (data.supplier_ids.length > 0) {
@@ -387,7 +388,7 @@ Invoice.advancedSearchInvoice = function (data, result) {
     }
     else if (data.is_paid == 'unpaid') {
         sql_and = sql_and + ' AND inv.check_id is NULL AND inv.is_paid = 0';
-    } else if (data.is_paid = 'partially_paid') {
+    } else if (data.is_paid == 'partially_paid') {
         sql_and = sql_and + ' AND inv.amount_paid > 0';
     }
     if (order_by_date) {
