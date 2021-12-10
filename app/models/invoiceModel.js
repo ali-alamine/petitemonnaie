@@ -353,6 +353,7 @@ Invoice.searchInvoice = function (data, result) {
         result(null, []);
     }
 }
+
 Invoice.advancedSearchInvoice = function (data, result) {
     var order_by_date = data.order_by_date;
     var order_by_amount = data.order_by_amount;
@@ -382,10 +383,10 @@ Invoice.advancedSearchInvoice = function (data, result) {
         sql_and = sql_and + ' AND inv.invoice_amount <= ' + amount_to;
     }
     if (data.is_paid == 'paid') {
-        sql_and = sql_and + ' AND inv.check_id is NOT NULL';
+        sql_and = sql_and + ' AND inv.is_paid = 1 or inv.amount_paid > 0';
     }
     else if (data.is_paid == 'unpaid') {
-        sql_and = sql_and + ' AND inv.check_id is NULL';
+        sql_and = sql_and + ' AND inv.check_id is NULL AND inv.is_paid = 0';
     }
     if (order_by_date) {
         sql_order = sql_order + ' ORDER BY inv.invoice_order DESC , date(inv.invoice_date) DESC'
@@ -400,6 +401,8 @@ Invoice.advancedSearchInvoice = function (data, result) {
         sql_order = sql_order + ' ORDER BY inv.invoice_order DESC , inv.invoice_id DESC'
     }
     sqlQuery = sqlQuery + sql_and + sql_order;
+    console.log('cccccccccccccc')
+    console.log(sqlQuery)
     sql.query(sqlQuery, function (err, res) {
         if (err) {
             result(err);
@@ -411,4 +414,5 @@ Invoice.advancedSearchInvoice = function (data, result) {
         }
     });
 }
+
 module.exports = Invoice;

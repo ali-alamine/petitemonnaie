@@ -118,6 +118,7 @@ exports.get_invoice_by_number = function (req, res) {
         }
     });
 }
+
 exports.advanced_search_invoice = function (req, res) {
     Invoice.advancedSearchInvoice(req.body, function (err, invoice_report) {
         if (err) {
@@ -127,6 +128,7 @@ exports.advanced_search_invoice = function (req, res) {
         }
     });
 }
+
 exports.search_invoice = function (req, res) {
     Invoice.searchInvoice(req.body, function (err, invoice_report) {
         if (err) {
