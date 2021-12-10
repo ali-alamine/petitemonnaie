@@ -17,6 +17,8 @@ module.exports = function(app){
     .post(store_controller.get_store_bank_acc)
     app.route('/get_store_expenses')
     .post(store_controller.get_store_expenses)
+    app.route('/get_entry_reports')
+    .post(store_controller.get_entry_reports)
 
     app.route('/supplier')
     .post(supplier_controller.add_new_supplier)
@@ -58,6 +60,8 @@ module.exports = function(app){
     .post(invoice_controller.search_invoice)
     app.route('/advanced_search_invoice')
     .post(invoice_controller.advanced_search_invoice)
+    app.route('/pay_partial_invoice_amount')
+    .post(invoice_controller.pay_partial_invoice_amount)
 
 
     app.route('/starting_amount')

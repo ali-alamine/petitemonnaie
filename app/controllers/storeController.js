@@ -25,6 +25,17 @@ exports.get_all_stores = function (req,res){
     });
 
 };
+exports.get_entry_reports = function (req,res){
+console.log(req.body)
+    Store.getEntryReports(req.body,function(err,store){
+        if(err){
+            res.send(err);
+        }else{
+            res.send(store)
+        }
+    });
+
+};
 exports.search_store_by_name = function(req,res){
     var request= req.body;
     var store_name=request.store_name;

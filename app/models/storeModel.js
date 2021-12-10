@@ -56,6 +56,28 @@ Store.searchStoreByName = function (store_name, result) {
     });
 }
 
+Store.getEntryReports = function (req, result) {
+    let sqlQuery = 'SELECT * FROM store_entry WHERE store_id = ' +req.store_id+ ' ORDER BY store_entry_id DESC LIMIT 100';
+    console.log(sqlQuery)
+    // sql.query(sqlQuery, function (err, res) {
+    //     if (err) {
+    //         result(err);
+    //     } else {
+    //         result(null, res);
+    //     }
+    // });
+
+    sql.query(sqlQuery, function (err, res) {
+        if (err) {
+            result(err);
+        } else {
+            result(res);
+        }
+    });
+
+
+}
+
 function dynamicQueryForStoreBankAcc(data, table_name, date_field_name) {
     var sqlCondition = '';
     var sqlQuery = '';
@@ -88,7 +110,7 @@ function dynamicQueryForStoreBankAcc(data, table_name, date_field_name) {
         sqlQuery = sqlQuery + sqlCondition + ' ORDER BY ' + date_field_name + ' DESC limit 300';
     }
 
-console.log(sqlQuery)
+    console.log(sqlQuery)
     return sqlQuery;
 }
 function custom_sort(a, b) {
@@ -122,7 +144,7 @@ Store.getStoreBankAcc = function (data, result) {
 
                                 check_res.forEach(check => {
                                     temp_data.push(check);
-                                    combinedRes.push({ 'type': 'check', 'sign': '-', 'amount': check.check_amount, 'date': check.check_date, 'check_number': check.check_number, 'supplier_name':check.supplier_name })
+                                    combinedRes.push({ 'type': 'check', 'sign': '-', 'amount': check.check_amount, 'date': check.check_date, 'check_number': check.check_number, 'supplier_name': check.supplier_name })
                                 });
                                 bank_deposit_res.forEach(deposit => {
                                     temp_data.push(deposit)

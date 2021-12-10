@@ -17,7 +17,7 @@ exports.add_new_invoice = function (req, res) {
 exports.pay_invoice = function (req, res) {
     var request = req.body;
     console.log(req.body);
-   var invoice_data = { "store_id":request.store_id,"check_id": request.check_id, "supplier_amount": request.supplier_amount, "invoice_amount": request.invoice_amount, "invoice_id": request.invoice_id, "supplier_id": request.supplier_id };
+    var invoice_data = { "payments":request.payments,"store_id": request.store_id,"amount_paid":request.amount_paid, "check_id": request.check_id, "supplier_amount": request.supplier_amount, "invoice_amount": request.invoice_amount, "invoice_id": request.invoice_id, "supplier_id": request.supplier_id };
     if (request.check_id != null) {
 
         res.send('INVOICE_IS_ASSIGNED_TO_A_CHECK');
@@ -30,6 +30,19 @@ exports.pay_invoice = function (req, res) {
             }
         })
     }
+}
+exports.pay_partial_invoice_amount = function (req, res) {
+    var request = req.body;
+    console.log(req.body);
+    var invoice_data = {"invoice_amount":request.invoice_amount, "store_id": request.store_id, "amount_paid":request.amount_paid,"supplier_amount": request.supplier_amount, "amount_to_pay": request.amount_to_pay, "invoice_id": request.invoice_id, "supplier_id": request.supplier_id };
+
+    Invoice.payPartialInvoiceAmount(invoice_data, function (err, invoice) {
+        if (err) {
+            res.send(err)
+        } else {
+            res.send(invoice)
+        }
+    })
 }
 
 exports.delete_invoice = function (req, res) {

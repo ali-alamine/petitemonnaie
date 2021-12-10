@@ -70,45 +70,59 @@ Invoice.getInvoices = function (result) {
 }
 
 Invoice.updateInvoice = function (invoice_data, result) {
+    console.log(invoice_data)
     sql.beginTransaction(function (err) {
         if (err) { throw err; }
-        var sqlQuery = 'UPDATE invoice SET invoice_number = ' + "'" + invoice_data.edit_invoice_number + "'" + ',store_id = ' + "'" + invoice_data.store_id + "'" + ',supplier_id = ' + "'" + invoice_data.supplier_id + "'" + ',invoice_amount= ' + "'" + invoice_data.edit_invoice_amount + "'" + " WHERE invoice_id = " + "'" + invoice_data.invoice_id + "'";
-        sql.query(sqlQuery, function (err, res) {
+
+        sql.query('SELECT invoice_number from invoice where invoice_number = ' + invoice_data.edit_invoice_number, function (err, res) {
             if (err) {
                 sql.rollback(function () {
                     throw err;
                 });
             } else {
-                if (!invoice_data.is_same_amount) {
-                    var update_supplier_amount = { 'new_supplier_amount': invoice_data.new_supplier_amount, 'supplier_id': invoice_data.supplier_id }
-                    supplierModel.updateAmount(update_supplier_amount, function (err, response) {
+                if (res.length == 0) {
+                    var sqlQuery = 'UPDATE invoice SET invoice_number = ' + "'" + invoice_data.edit_invoice_number + "'" + ',store_id = ' + "'" + invoice_data.store_id + "'" + ',supplier_id = ' + "'" + invoice_data.supplier_id + "'" + ',invoice_amount= ' + "'" + invoice_data.edit_invoice_amount + "'" + " WHERE invoice_id = " + "'" + invoice_data.invoice_id + "'";
+                    sql.query(sqlQuery, function (err, res) {
                         if (err) {
                             sql.rollback(function () {
                                 throw err;
                             });
                         } else {
-                            sql.commit(function (err) {
-                                if (err) {
-                                    sql.rollback(function () {
-                                        throw err;
-                                    });
-                                }
-                                result(null, res);
-                            });
+                            if (!invoice_data.is_same_amount) {
+                                var update_supplier_amount = { 'new_supplier_amount': invoice_data.new_supplier_amount, 'supplier_id': invoice_data.supplier_id }
+                                supplierModel.updateAmount(update_supplier_amount, function (err, response) {
+                                    if (err) {
+                                        sql.rollback(function () {
+                                            throw err;
+                                        });
+                                    } else {
+                                        sql.commit(function (err) {
+                                            if (err) {
+                                                sql.rollback(function () {
+                                                    throw err;
+                                                });
+                                            }
+                                            result(null, res);
+                                        });
+                                    }
+                                })
+                            } else {
+                                sql.commit(function (err) {
+                                    if (err) {
+                                        sql.rollback(function () {
+                                            throw err;
+                                        });
+                                    }
+                                    result(null, res);
+                                });
+                            }
                         }
-                    })
-                } else {
-                    sql.commit(function (err) {
-                        if (err) {
-                            sql.rollback(function () {
-                                throw err;
-                            });
-                        }
-                        result(null, res);
                     });
+                } else {
+                    result('DUPLICATE_INV_NUM', res);
                 }
             }
-        });
+        })
     })
 }
 
@@ -146,6 +160,8 @@ Invoice.deleteInvoice = function (invoice_data, result) {
 }
 
 Invoice.payInvoice = function (invoice_data, result) {
+    console.log('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
+    console.log(invoice_data)
     sql.beginTransaction(function (err) {
         if (err) { throw err; }
         var sqlQuery = "UPDATE invoice SET is_paid = 1 WHERE invoice_id = " + invoice_data.invoice_id;
@@ -156,7 +172,7 @@ Invoice.payInvoice = function (invoice_data, result) {
                     throw err;
                 });
             } else {
-                let new_supplier_amount = parseInt(invoice_data.supplier_amount) - parseInt(invoice_data.invoice_amount);
+                let new_supplier_amount = parseInt(invoice_data.supplier_amount) - (parseInt(invoice_data.invoice_amount) - parseInt(invoice_data.amount_paid));
                 let update_supplier_amount = { 'new_supplier_amount': new_supplier_amount, 'supplier_id': invoice_data.supplier_id };
                 supplierModel.updateAmount(update_supplier_amount, function (err, response) {
                     if (err) {
@@ -164,14 +180,66 @@ Invoice.payInvoice = function (invoice_data, result) {
                             throw err;
                         });
                     } else {
-                        let invoice_amount = parseInt(invoice_data.invoice_amount);
-                        let update_remain_amount_query = 'UPDATE store_entry SET remain_amount = (remain_amount - ' + invoice_amount + '), starting_amount = (starting_amount - ' + invoice_amount + ') WHERE store_id = ' +invoice_data.store_id+ ' ORDER BY store_entry_id DESC LIMIT 1';
+                        let payment_amount = parseInt(invoice_data.invoice_amount) - parseInt(invoice_data.amount_paid);
+                        let update_remain_amount_query = 'UPDATE store_entry SET remain_amount = (remain_amount - ' + payment_amount + '), starting_amount = (starting_amount - ' + payment_amount + ') WHERE store_id = ' + invoice_data.store_id + ' ORDER BY store_entry_id DESC LIMIT 1';
                         sql.query(update_remain_amount_query, function (err, res) {
                             if (err) {
                                 sql.rollback(function () {
                                     throw err;
                                 });
                             } else {
+                                sql.commit(function (err) {
+                                    if (err) {
+                                        sql.rollback(function () {
+                                            throw err;
+                                        });
+                                    }
+                                    result(null, res);
+                                });
+                            }
+                        });
+                    }
+                })
+            }
+        });
+    })
+}
+
+Invoice.payPartialInvoiceAmount = function (invoice_data, result) {
+    console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> invoice_data <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<')
+    console.log(invoice_data)
+    sql.beginTransaction(function (err) {
+        if (err) { throw err; }
+        let new_amount_paid = parseInt(invoice_data.amount_paid) + parseInt(invoice_data.amount_to_pay);
+        let new_invoice_amount = parseInt(invoice_data.invoice_amount) - parseInt(invoice_data.amount_to_pay);
+        // , invoice_amount = " + new_invoice_amount +" 
+        var sqlQuery = "UPDATE invoice SET amount_paid = " + new_amount_paid + " WHERE invoice_id = " + invoice_data.invoice_id;
+        sql.query(sqlQuery, function (err, res) {
+            if (err) {
+                sql.rollback(function () {
+                    throw err;
+                });
+            } else {
+                let new_supplier_amount = parseInt(invoice_data.supplier_amount) - parseInt(invoice_data.amount_to_pay);
+                let update_supplier_amount = { 'new_supplier_amount': new_supplier_amount, 'supplier_id': invoice_data.supplier_id };
+                supplierModel.updateAmount(update_supplier_amount, function (err, response) {
+                    if (err) {
+                        sql.rollback(function () {
+                            throw err;
+                        });
+                    } else {
+                        let amount_to_pay = parseInt(invoice_data.amount_to_pay);
+                        let update_remain_amount_query = 'UPDATE store_entry SET remain_amount = (remain_amount - ' + amount_to_pay + '), starting_amount = (starting_amount - ' + amount_to_pay + ') WHERE store_id = ' + invoice_data.store_id + ' ORDER BY store_entry_id DESC LIMIT 1';
+                        sql.query(update_remain_amount_query, function (err, res) {
+                            if (err) {
+                                sql.rollback(function () {
+                                    throw err;
+                                });
+                            } else {
+                                let payment_data={'invoice_id':invoice_data.invoice_id,'payment_amount':invoice_data.amount_to_pay,'payment_date':invoice_data}
+                                sql.query('INSERT INTO invoice_payment SET ?',)
+
+
                                 sql.commit(function (err) {
                                     if (err) {
                                         sql.rollback(function () {
@@ -219,14 +287,15 @@ Invoice.getInvoiceByNumber = function (invoice_data, result) {
         sqlQuery = 'SELECT invoice_id,invoice_number,invoice_amount from invoice where invoice_number like "% %"';
     } else {
         let supplier_id_condition = "";
-        if (supplier_id != null) {
+        if (supplier_id != '') {
 
             supplier_id_condition = "supplier_id = " + supplier_id + " AND ";
         } else {
-            supplier_id_condition = "";
+            supplier_id_condition = "supplier_id = " + "' '" + " AND ";
         }
-        sqlQuery = 'SELECT invoice_id,invoice_number,invoice_amount from invoice where ' + supplier_id_condition + 'invoice_number like "%' + invoice_number + '%" and check_id IS NULL LIMIT 10';
+        sqlQuery = 'SELECT invoice_id,invoice_number,invoice_amount from invoice where ' + supplier_id_condition + 'invoice_number like "%' + invoice_number + '%" and check_id IS NULL AND amount_paid = 0 LIMIT 10';
     }
+    console.log(sqlQuery)
     sql.query(sqlQuery, function (err, res) {
         if (err) {
             result(err);
