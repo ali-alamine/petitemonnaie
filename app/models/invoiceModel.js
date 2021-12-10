@@ -60,7 +60,7 @@ Invoice.addNewInvoice = function (invoice_data, result) {
 }
 
 Invoice.getInvoices = function (result) {
-    sql.query('SELECT inv.*,sup.*,st.*, ck.check_number FROM invoice as inv left join supplier as sup on inv.supplier_id = sup.supplier_id left join store as st on inv.store_id = st.store_id left join bank_check as ck on inv.check_id = ck.bank_check_id ORDER BY inv.invoice_order DESC , inv.invoice_id DESC limit 50', function (err, res) {
+    sql.query('SELECT inv.*,sup.*,st.*, ck.check_number FROM invoice as inv left join supplier as sup on inv.supplier_id = sup.supplier_id left join store as st on inv.store_id = st.store_id left join bank_check as ck on inv.check_id = ck.bank_check_id ORDER BY inv.invoice_order DESC , inv.invoice_id DESC limit 300', function (err, res) {
         if (err) {
             result(err);
         } else {
@@ -236,13 +236,13 @@ Invoice.payPartialInvoiceAmount = function (invoice_data, result) {
                                     throw err;
                                 });
                             } else {
-                                let payment_data={'invoice_id':invoice_data.invoice_id,'payment_amount':invoice_data.amount_to_pay,'payment_date':invoice_data.invoice_date }
-                                sql.query('INSERT INTO invoice_payment SET ?',payment_data, function(){
+                                let payment_data = { 'invoice_id': invoice_data.invoice_id, 'payment_amount': invoice_data.amount_to_pay, 'payment_date': invoice_data.invoice_date }
+                                sql.query('INSERT INTO invoice_payment SET ?', payment_data, function () {
                                     if (err) {
                                         sql.rollback(function () {
                                             throw err;
                                         });
-                                    }else{
+                                    } else {
                                         sql.commit(function (err) {
                                             if (err) {
                                                 sql.rollback(function () {
@@ -387,6 +387,8 @@ Invoice.advancedSearchInvoice = function (data, result) {
     }
     else if (data.is_paid == 'unpaid') {
         sql_and = sql_and + ' AND inv.check_id is NULL AND inv.is_paid = 0';
+    } else if (data.is_paid = 'partially_paid') {
+        sql_and = sql_and + ' AND inv.amount_paid > 0';
     }
     if (order_by_date) {
         sql_order = sql_order + ' ORDER BY inv.invoice_order DESC , date(inv.invoice_date) DESC'
