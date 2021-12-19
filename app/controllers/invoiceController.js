@@ -16,8 +16,9 @@ exports.add_new_invoice = function (req, res) {
 
 exports.pay_invoice = function (req, res) {
     var request = req.body;
-    console.log(req.body);
-    var invoice_data = { "payments":request.payments,"store_id": request.store_id,"amount_paid":request.amount_paid, "check_id": request.check_id, "supplier_amount": request.supplier_amount, "invoice_amount": request.invoice_amount, "invoice_id": request.invoice_id, "supplier_id": request.supplier_id,"invoice_date":request.invoice_date };
+    console.log('here we go')
+    console.log(request)
+    var invoice_data = { "payments": request.payments, "drawer_amount": request.drawer_amount, "store_id": request.store_id, "amount_paid": request.amount_paid, "check_id": request.check_id, "supplier_amount": request.supplier_amount, "invoice_amount": request.invoice_amount, "invoice_id": request.invoice_id, "supplier_id": request.supplier_id, "invoice_date": request.invoice_date };
     if (request.check_id != null) {
 
         res.send('INVOICE_IS_ASSIGNED_TO_A_CHECK');
@@ -33,10 +34,22 @@ exports.pay_invoice = function (req, res) {
 }
 exports.pay_partial_invoice_amount = function (req, res) {
     var request = req.body;
-    console.log(req.body);
-    var invoice_data = {"invoice_amount":request.invoice_amount, "store_id": request.store_id, "amount_paid":request.amount_paid,"supplier_amount": request.supplier_amount, "amount_to_pay": request.amount_to_pay, "invoice_id": request.invoice_id, "supplier_id": request.supplier_id };
+    var invoice_data = { "invoice_amount": request.invoice_amount, "drawer_amount": request.drawer_amount, "invoice_date": request.invoice_date, "store_id": request.store_id, "amount_paid": request.amount_paid, "supplier_amount": request.supplier_amount, "amount_to_pay": request.amount_to_pay, "invoice_id": request.invoice_id, "supplier_id": request.supplier_id };
 
     Invoice.payPartialInvoiceAmount(invoice_data, function (err, invoice) {
+        if (err) {
+            res.send(err)
+        } else {
+            res.send(invoice)
+        }
+    })
+}
+
+exports.get_available_invoice_to_pay = function (req, res) {
+    var request = req.body;
+    console.log(request)
+    var supplier_data = { "supplier_id": request.supplier_id, "amount_to_pay": request.amount_to_pay };
+    Invoice.getAvailableInvoiceToPay(supplier_data, function (err, invoice) {
         if (err) {
             res.send(err)
         } else {
@@ -100,7 +113,6 @@ exports.pin_invoice = function (req, res) {
     });
 }
 exports.un_pin_invoice = function (req, res) {
-    console.log(req.body)
     Invoice.unPinInvoice(req.body, function (err, store) {
         if (err) {
             res.send(err);

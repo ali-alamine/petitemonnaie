@@ -16,6 +16,7 @@ Store.addNewStore = function (store_details, result) {
         }
     })
 }
+
 Store.getAllStores = function (result) {
     sql.query('SELECT * FROM store order by store_id desc', function (err, res) {
         if (err) {
@@ -25,9 +26,9 @@ Store.getAllStores = function (result) {
         }
     });
 }
+
 Store.updateAmount = function (store_data, result) {
     var sqlQuery = "UPDATE store SET amount = " + store_data.new_store_amount + " WHERE store_id = " + store_data.store_id;
-
     sql.query(sqlQuery, function (err, res) {
         if (err) {
             sql.rollback(function () {
@@ -38,6 +39,23 @@ Store.updateAmount = function (store_data, result) {
         }
     });
 }
+
+Store.updateDrawerAmount = function (store_data, result) {
+    var sqlQuery = "UPDATE store SET drawer_amount = " + store_data.new_drawer_amount + " WHERE store_id = " + store_data.store_id;
+    sql.query(sqlQuery, function (err, res) {
+        if (err) {
+            sql.rollback(function () {
+                throw err;
+            });
+        } else {
+            result(null, res);
+        }
+    });
+}
+
+// create a new column in store table for the store_drawer_amount. which starts at 0.
+// update it on invoice payments (partial payment and invoice payment)
+// for report 
 Store.searchStoreByName = function (store_name, result) {
     var sqlQuery = '';
     if (store_name == '') {
@@ -57,7 +75,7 @@ Store.searchStoreByName = function (store_name, result) {
 }
 
 Store.getEntryReports = function (req, result) {
-    let sqlQuery = 'SELECT * FROM store_entry WHERE store_id = ' +req.store_id+ ' ORDER BY store_entry_id DESC LIMIT 100';
+    let sqlQuery = 'SELECT * FROM store_entry WHERE store_id = ' + req.store_id + ' ORDER BY store_entry_id DESC LIMIT 100';
     console.log(sqlQuery)
     // sql.query(sqlQuery, function (err, res) {
     //     if (err) {
@@ -74,8 +92,6 @@ Store.getEntryReports = function (req, result) {
             result(res);
         }
     });
-
-
 }
 
 function dynamicQueryForStoreBankAcc(data, table_name, date_field_name) {
@@ -113,6 +129,7 @@ function dynamicQueryForStoreBankAcc(data, table_name, date_field_name) {
     console.log(sqlQuery)
     return sqlQuery;
 }
+
 function custom_sort(a, b) {
     return new Date(a.date).getTime() - new Date(b.date).getTime();
 }

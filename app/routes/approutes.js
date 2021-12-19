@@ -62,6 +62,8 @@ module.exports = function(app){
     .post(invoice_controller.advanced_search_invoice)
     app.route('/pay_partial_invoice_amount')
     .post(invoice_controller.pay_partial_invoice_amount)
+    app.route('/get_available_invoice_to_pay')
+    .post(invoice_controller.get_available_invoice_to_pay)
 
 
     app.route('/starting_amount')
