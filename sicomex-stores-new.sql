@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 07, 2021 at 10:26 PM
+-- Generation Time: Jan 02, 2022 at 04:43 PM
 -- Server version: 10.4.21-MariaDB
 -- PHP Version: 7.3.31
 
@@ -41,17 +41,6 @@ CREATE TABLE `bank_check` (
   `check_order` int(5) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
---
--- Dumping data for table `bank_check`
---
-
-INSERT INTO `bank_check` (`bank_check_id`, `check_description`, `supplier_id`, `check_amount`, `check_date`, `store_id`, `is_paid`, `is_for_sup`, `invoice_ids`, `check_number`, `check_order`) VALUES
-(140, 'details1', NULL, 120, '2021-12-05 00:00:00', 19, 0, 0, NULL, 123, 0),
-(141, NULL, 39, 50, '2021-12-05 00:00:00', 19, 1, 1, '190', 878, 0),
-(142, NULL, 39, 3750, '2021-12-05 00:00:00', 19, 0, 1, '197,196,195,194,193,192,191,198,199', 3321, 0),
-(143, '11', NULL, 11, '2021-12-06 00:00:00', 20, 0, 0, NULL, 1, 0),
-(144, NULL, 39, 1000, '2021-12-07 00:00:00', 20, 1, 1, '203', 12122222, 0);
-
 -- --------------------------------------------------------
 
 --
@@ -66,14 +55,6 @@ CREATE TABLE `cash_detail` (
   `store_id` int(5) DEFAULT NULL,
   `store_entry_id` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-
---
--- Dumping data for table `cash_detail`
---
-
-INSERT INTO `cash_detail` (`cash_detail_id`, `text`, `amount`, `type`, `store_id`, `store_entry_id`) VALUES
-(212, 'cash1', 100, 'sup', 19, 115),
-(213, 'cash2', 100, 'exp', 19, 115);
 
 -- --------------------------------------------------------
 
@@ -91,43 +72,55 @@ CREATE TABLE `invoice` (
   `check_id` int(11) DEFAULT NULL,
   `invoice_order` int(5) NOT NULL DEFAULT 0,
   `invoice_number` bigint(11) DEFAULT NULL,
-  `amount_paid` bigint(11) DEFAULT 0
+  `amount_paid` bigint(11) DEFAULT 0,
+  `payments` varchar(500) COLLATE utf8_unicode_ci DEFAULT '{}'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- Dumping data for table `invoice`
 --
 
-INSERT INTO `invoice` (`invoice_id`, `store_id`, `supplier_id`, `invoice_amount`, `invoice_date`, `is_paid`, `check_id`, `invoice_order`, `invoice_number`, `amount_paid`) VALUES
-(190, 19, 39, 50, '2021-12-05', 1, 141, 0, 125, NULL),
-(191, 19, 39, 120, '2021-12-05', 1, 142, 0, 3421, NULL),
-(192, 19, 39, 10, '2021-12-05', 1, 142, 0, 100, NULL),
-(193, 19, 39, 10, '2021-12-05', 1, 142, 0, 10, NULL),
-(194, 19, 39, 10, '2021-12-05', 1, 142, 0, 1010, NULL),
-(195, 19, 39, 1000, '2021-12-05', 1, 142, 0, 13000, NULL),
-(196, 19, 39, 500, '2021-12-05', 1, 142, 0, 20103, NULL),
-(197, 19, 39, 1000, '2021-12-05', 1, 142, 0, 131212, NULL),
-(198, 20, 39, 100, '2021-12-05', 1, 142, 0, 1211, NULL),
-(199, 19, 39, 1000, '2021-12-05', 1, 142, 0, 1212, NULL),
-(200, 20, 39, 1000, '2021-12-06', 1, NULL, 0, 323212, NULL),
-(201, 20, 39, 1000, '2021-12-06', 1, NULL, 0, 1212, NULL),
-(202, 21, 39, 100, '2021-12-06', 1, NULL, 0, 121233, NULL),
-(203, 21, 39, 1000, '2021-12-07', 1, 144, 0, 12112111, NULL),
-(204, 21, 39, 1000, '2021-12-07', 0, NULL, 0, 1122, NULL),
-(205, 21, 39, 1000, '2021-12-07', 0, NULL, 0, 12122, 0);
+INSERT INTO `invoice` (`invoice_id`, `store_id`, `supplier_id`, `invoice_amount`, `invoice_date`, `is_paid`, `check_id`, `invoice_order`, `invoice_number`, `amount_paid`, `payments`) VALUES
+(258, 36, 44, 1000, '2021-12-19', 0, NULL, 0, 123331, 901, '{}'),
+(259, 36, 44, 2000, '2021-12-19', 0, NULL, 1, 8373737, 1700, '{}'),
+(260, 36, 44, 9000, '2021-12-19', 0, NULL, 0, 9384848, 8900, '{}');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `invoice_edit_history`
+-- Table structure for table `invoice_payment`
 --
 
-CREATE TABLE `invoice_edit_history` (
-  `inv_edit_h_id` int(11) NOT NULL,
+CREATE TABLE `invoice_payment` (
+  `payment_id` int(10) NOT NULL,
   `invoice_id` int(11) DEFAULT NULL,
-  `invoice_amount` bigint(11) DEFAULT NULL,
-  `invoice_date` datetime DEFAULT NULL
+  `payment_amount` int(11) DEFAULT NULL,
+  `payment_date` date DEFAULT NULL,
+  `store_entry_id` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+--
+-- Dumping data for table `invoice_payment`
+--
+
+INSERT INTO `invoice_payment` (`payment_id`, `invoice_id`, `payment_amount`, `payment_date`, `store_entry_id`) VALUES
+(80, 260, 8900, NULL, 173),
+(81, 258, 100, '2021-12-19', 173),
+(82, 258, 100, '2021-12-19', 173),
+(83, 258, 100, '2021-12-19', 173),
+(84, 259, 100, '2021-12-19', 173),
+(85, 259, 100, '2021-12-19', 173),
+(86, 259, 100, '2021-12-19', 173),
+(87, 259, 100, '2021-12-19', 173),
+(88, 259, 300, '2021-12-19', 173),
+(89, 259, 300, '2021-12-19', 173),
+(90, 259, 300, '2021-12-19', 173),
+(91, 258, 300, '2021-12-19', 173),
+(92, 259, 300, '2021-12-19', 173),
+(93, 258, 300, '2021-12-19', 173),
+(94, 259, 100, '2021-12-19', 173),
+(95, 259, 100, '2021-12-19', 174),
+(96, 258, 1, '2021-12-19', 174);
 
 -- --------------------------------------------------------
 
@@ -140,17 +133,16 @@ CREATE TABLE `store` (
   `store_name` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
   `store_manager` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
   `store_address` varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `amount` bigint(11) DEFAULT 0
+  `amount` bigint(11) DEFAULT 0,
+  `drawer_amount` bigint(11) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- Dumping data for table `store`
 --
 
-INSERT INTO `store` (`store_id`, `store_name`, `store_manager`, `store_address`, `amount`) VALUES
-(19, 'abc', NULL, NULL, 150),
-(20, 'test2', NULL, NULL, -250),
-(21, 'test', NULL, NULL, 0);
+INSERT INTO `store` (`store_id`, `store_name`, `store_manager`, `store_address`, `amount`, `drawer_amount`) VALUES
+(36, 'test', NULL, NULL, 0, -1401);
 
 -- --------------------------------------------------------
 
@@ -175,10 +167,8 @@ CREATE TABLE `store_entry` (
 --
 
 INSERT INTO `store_entry` (`store_entry_id`, `store_id`, `sales_amount`, `cash_supply_amount`, `cash_expense_amount`, `bank_deposit`, `remain_amount`, `entry_report_date`, `starting_amount`) VALUES
-(115, 19, 1000, 100, 100, 200, -900, '2021-12-05 00:00:00', -900),
-(116, 20, 100, 0, 0, 50, 50, '2021-12-05 00:00:00', 50),
-(117, 20, 500, 0, 0, 400, 150, '2021-12-05 00:00:00', 150),
-(118, 20, 500, 0, 0, 300, -2980, '2021-12-05 00:00:00', -2750);
+(173, 36, 10000, 0, 0, 0, -1500, '2021-12-19 00:00:00', 0),
+(174, 36, 100, 0, 0, 0, -1401, '2021-12-25 00:00:00', -1400);
 
 -- --------------------------------------------------------
 
@@ -198,7 +188,7 @@ CREATE TABLE `supplier` (
 --
 
 INSERT INTO `supplier` (`supplier_id`, `supplier_name`, `supplier_amount`, `sup_order`) VALUES
-(39, 'sup1', 3000, 0);
+(44, 'sup1', 499, 0);
 
 -- --------------------------------------------------------
 
@@ -244,10 +234,10 @@ ALTER TABLE `invoice`
   ADD PRIMARY KEY (`invoice_id`);
 
 --
--- Indexes for table `invoice_edit_history`
+-- Indexes for table `invoice_payment`
 --
-ALTER TABLE `invoice_edit_history`
-  ADD PRIMARY KEY (`inv_edit_h_id`);
+ALTER TABLE `invoice_payment`
+  ADD PRIMARY KEY (`payment_id`);
 
 --
 -- Indexes for table `store`
@@ -281,43 +271,43 @@ ALTER TABLE `user`
 -- AUTO_INCREMENT for table `bank_check`
 --
 ALTER TABLE `bank_check`
-  MODIFY `bank_check_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=145;
+  MODIFY `bank_check_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=147;
 
 --
 -- AUTO_INCREMENT for table `cash_detail`
 --
 ALTER TABLE `cash_detail`
-  MODIFY `cash_detail_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=214;
+  MODIFY `cash_detail_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=232;
 
 --
 -- AUTO_INCREMENT for table `invoice`
 --
 ALTER TABLE `invoice`
-  MODIFY `invoice_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=206;
+  MODIFY `invoice_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=261;
 
 --
--- AUTO_INCREMENT for table `invoice_edit_history`
+-- AUTO_INCREMENT for table `invoice_payment`
 --
-ALTER TABLE `invoice_edit_history`
-  MODIFY `inv_edit_h_id` int(11) NOT NULL AUTO_INCREMENT;
+ALTER TABLE `invoice_payment`
+  MODIFY `payment_id` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=97;
 
 --
 -- AUTO_INCREMENT for table `store`
 --
 ALTER TABLE `store`
-  MODIFY `store_id` int(5) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `store_id` int(5) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
 
 --
 -- AUTO_INCREMENT for table `store_entry`
 --
 ALTER TABLE `store_entry`
-  MODIFY `store_entry_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=119;
+  MODIFY `store_entry_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=175;
 
 --
 -- AUTO_INCREMENT for table `supplier`
 --
 ALTER TABLE `supplier`
-  MODIFY `supplier_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=40;
+  MODIFY `supplier_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=45;
 
 --
 -- AUTO_INCREMENT for table `user`
