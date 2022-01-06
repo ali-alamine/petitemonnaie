@@ -411,20 +411,19 @@ Invoice.getAvailableInvoiceToPay = function (supplier_data, result) {
     console.log(supplier_data)
     let amount_to_pay = parseInt(supplier_data.amount_to_pay);
 
-    let sqlQuery = 'SELECT inv.*,sup.*,st.* from invoice as inv left join supplier as sup on inv.supplier_id = sup.supplier_id left join store as st on inv.store_id = st.store_id where inv.supplier_id = ' + supplier_id + ' AND inv.is_paid != 1 AND inv.check_id is NULL';
-    // let sqlQuery = 'SELECT inv.*,sup.*,st.* from invoice as inv left join supplier as sup on inv.supplier_id = sup.supplier_id left join store as st on inv.store_id = st.store_id where inv.supplier_id = ' + supplier_id + ' AND inv.invoice_amount > ' + amount_to_pay + ' AND inv.is_paid != 1 AND inv.check_id is NULL';
+    let sqlQuery = 'SELECT inv.*,sup.*,st.* from invoice as inv left join supplier as sup on inv.supplier_id = sup.supplier_id left join store as st on inv.store_id = st.store_id where inv.supplier_id = ' + supplier_id + ' AND inv.invoice_amount > ' + amount_to_pay + ' AND inv.is_paid != 1 AND inv.check_id is NULL';
     console.log(sqlQuery)
     sql.query(sqlQuery, function (err, res) {
         if (err) {
             result(err);
         } else {
-            // let new_res = [];
-            // for (let i = 0; i < res.length; i++) {
-            //     if ((res[i].amount_paid + parseInt(amount_to_pay)) < res[i].invoice_amount) {
-            //         new_res.push(res[i]);
-            //     }
-            // }
-            result(res);
+            let new_res = [];
+            for (let i = 0; i < res.length; i++) {
+                if ((res[i].amount_paid + parseInt(amount_to_pay)) < res[i].invoice_amount) {
+                    new_res.push(res[i]);
+                }
+            }
+            result(new_res);
         }
     });
 }
