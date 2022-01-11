@@ -159,6 +159,78 @@ Invoice.deleteInvoice = function (invoice_data, result) {
     })
 }
 
+
+Invoice.payMultipleInvoices = function (invoice_data, result) {
+    console.log(invoice_data)
+    console.log('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
+    sql.beginTransaction(function (err) {
+        if (err) { throw err; }
+        var sqlQuery = "UPDATE invoice SET is_paid = 1 WHERE invoice_id in (" + invoice_data.invoice_ids + ")";
+        sql.query(sqlQuery, function (err, res) {
+            if (err) {
+                sql.rollback(function () {
+                    throw err;
+                });
+            } else {
+                let new_supplier_amount = parseInt(invoice_data.supplier_amount) - parseInt(invoice_data.total_invoices_amount);
+                let update_supplier_amount = { 'new_supplier_amount': new_supplier_amount, 'supplier_id': invoice_data.supplier_id };
+                supplierModel.updateAmount(update_supplier_amount, function (err, response) {
+                    if (err) {
+                        sql.rollback(function () {
+                            throw err;
+                        });
+                    } else {
+                        var total_invoices_amount = parseInt(invoice_data.total_invoices_amount);
+                        sql.query('SELECT store_entry_id, remain_amount from store_entry where store_id = ' + invoice_data.store_id + ' ORDER BY store_entry_id DESC LIMIT 1', function (err, res) {
+                            if (err || res.length === 0) {
+                                sql.rollback(function () {
+                                    throw err;
+                                })
+                            } else {
+                                let new_remain_amount = parseInt(res[0].remain_amount) - parseInt(total_invoices_amount);
+                                console.log(new_remain_amount, ' sssssssssssssssssssssssssssss ')
+                                let store_entry_id = parseInt(res[0].store_entry_id);
+
+                                let update_remain_amount_query = 'UPDATE store_entry SET remain_amount = ' + new_remain_amount + ' WHERE store_entry_id = ' + store_entry_id + ' ORDER BY store_entry_id DESC LIMIT 1';
+
+                                sql.query(update_remain_amount_query, function (err, res) {
+                                    if (err) {
+                                        sql.rollback(function () {
+                                            throw err;
+                                        });
+                                    } else {
+
+                                        let new_drawer_amount = parseInt(invoice_data.drawer_amount) - parseInt(total_invoices_amount);
+
+                                        var update_drawer_amount = { 'new_drawer_amount': new_drawer_amount, 'store_id': invoice_data.store_id };
+                                        storeModel.updateDrawerAmount(update_drawer_amount, function (err, response) {
+                                            if (err) {
+                                                sql.rollback(function () {
+                                                    throw err;
+                                                })
+                                            } else {
+                                                sql.commit(function (err) {
+                                                    if (err) {
+                                                        sql.rollback(function () {
+                                                            throw err;
+                                                        });
+                                                    }
+                                                    result(null, res);
+                                                });
+                                            }
+                                        })
+                                    }
+                                });
+                            }
+                        })
+                    }
+                })
+            }
+        });
+    })
+}
+
+
 Invoice.payInvoice = function (invoice_data, result) {
     sql.beginTransaction(function (err) {
         if (err) { throw err; }
@@ -178,15 +250,15 @@ Invoice.payInvoice = function (invoice_data, result) {
                         });
                     } else {
                         var payment_amount = parseInt(invoice_data.invoice_amount) - parseInt(invoice_data.amount_paid);
-                        sql.query('SELECT store_entry_id, remain_amount from store_entry ORDER BY store_entry_id DESC LIMIT 1', function (err, res) {
+                        sql.query('SELECT store_entry_id, remain_amount from store_entry where store_id = ' + invoice_data.store_id + ' ORDER BY store_entry_id DESC LIMIT 1', function (err, res) {
                             if (err || res.length === 0) {
                                 sql.rollback(function () {
                                     throw err;
                                 })
                             } else {
-                                let new_remain_amount = res[0].remain_amount - parseInt(payment_amount);
-
-                                let update_remain_amount_query = 'UPDATE store_entry SET remain_amount = ' + new_remain_amount + ' WHERE store_id = ' + invoice_data.store_id + ' ORDER BY store_entry_id DESC LIMIT 1';
+                                let new_remain_amount = parseInt(res[0].remain_amount) - parseInt(payment_amount);
+                                let store_entry_id = parseInt(res[0].store_entry_id);
+                                let update_remain_amount_query = 'UPDATE store_entry SET remain_amount = ' + new_remain_amount + ' WHERE store_entry_id = ' + store_entry_id;
 
                                 sql.query(update_remain_amount_query, function (err, res) {
                                     if (err) {
@@ -194,7 +266,6 @@ Invoice.payInvoice = function (invoice_data, result) {
                                             throw err;
                                         });
                                     } else {
-
                                         let new_drawer_amount = parseInt(invoice_data.drawer_amount) - parseInt(payment_amount);
 
                                         var update_drawer_amount = { 'new_drawer_amount': new_drawer_amount, 'store_id': invoice_data.store_id };
@@ -411,6 +482,8 @@ Invoice.getAvailableInvoiceToPay = function (supplier_data, result) {
     console.log(supplier_data)
     let amount_to_pay = parseInt(supplier_data.amount_to_pay);
 
+    /* IMPORTANT >>>>> ADD STORE ID TO THE QUERY AS IN getUnpaidInvoices */
+
     let sqlQuery = 'SELECT inv.*,sup.*,st.* from invoice as inv left join supplier as sup on inv.supplier_id = sup.supplier_id left join store as st on inv.store_id = st.store_id where inv.supplier_id = ' + supplier_id + ' AND inv.invoice_amount > ' + amount_to_pay + ' AND inv.is_paid != 1 AND inv.check_id is NULL';
     console.log(sqlQuery)
     sql.query(sqlQuery, function (err, res) {
@@ -427,6 +500,22 @@ Invoice.getAvailableInvoiceToPay = function (supplier_data, result) {
         }
     });
 }
+
+Invoice.getUnpaidInvoices = function (data, result) {
+    let supplier_id = data.supplier_id;
+    let amount_to_pay = parseInt(data.amount_to_pay);
+    let store_id = data.store_id
+    let sqlQuery = 'SELECT inv.*,sup.*,st.* from invoice as inv left join supplier as sup on inv.supplier_id = sup.supplier_id left join store as st on inv.store_id = st.store_id where inv.supplier_id = ' + supplier_id + ' AND inv.store_id = ' + store_id + ' AND inv.is_paid != 1 AND inv.check_id is NULL';
+
+    sql.query(sqlQuery, function (err, res) {
+        if (err) {
+            result(err);
+        } else {
+            result(res);
+        }
+    });
+}
+
 Invoice.getInvoiceByNumber = function (invoice_data, result) {
     let invoice_number = invoice_data.invoice_number;
     let supplier_id = invoice_data.supplier_id;

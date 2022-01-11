@@ -16,8 +16,6 @@ exports.add_new_invoice = function (req, res) {
 
 exports.pay_invoice = function (req, res) {
     var request = req.body;
-    console.log('here we go')
-    console.log(request)
     var invoice_data = { "payments": request.payments, "drawer_amount": request.drawer_amount, "store_id": request.store_id, "amount_paid": request.amount_paid, "check_id": request.check_id, "supplier_amount": request.supplier_amount, "invoice_amount": request.invoice_amount, "invoice_id": request.invoice_id, "supplier_id": request.supplier_id, "invoice_date": request.invoice_date };
     if (request.check_id != null) {
 
@@ -50,6 +48,28 @@ exports.get_available_invoice_to_pay = function (req, res) {
     console.log(request)
     var supplier_data = { "supplier_id": request.supplier_id, "amount_to_pay": request.amount_to_pay };
     Invoice.getAvailableInvoiceToPay(supplier_data, function (err, invoice) {
+        if (err) {
+            res.send(err)
+        } else {
+            res.send(invoice)
+        }
+    })
+}
+exports.get_unpaid_invoices = function (req, res) {
+    let request = req.body;
+    let data = { "supplier_id": request.supplier_id, "amount_to_pay": request.amount_to_pay, "store_id":request.store_id };
+    Invoice.getUnpaidInvoices(data, function (err, invoice) {
+        if (err) {
+            res.send(err)
+        } else {
+            res.send(invoice)
+        }
+    })
+}
+exports.pay_selected_sup_invoices = function (req, res) {
+    let request = req.body;
+    let invoice_data = { "invoice_ids": request.invoice_ids, "supplier_amount": request.supplier_amount, "total_invoices_amount": request.total_invoices_amount, "supplier_id": request.supplier_id, "store_id": request.store_id, "drawer_amount": request.drawer_amount };
+    Invoice.payMultipleInvoices(invoice_data, function (err, invoice) {
         if (err) {
             res.send(err)
         } else {

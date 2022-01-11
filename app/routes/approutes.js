@@ -64,6 +64,10 @@ module.exports = function(app){
     .post(invoice_controller.pay_partial_invoice_amount)
     app.route('/get_available_invoice_to_pay')
     .post(invoice_controller.get_available_invoice_to_pay)
+    app.route('/get_unpaid_invoices')
+    .post(invoice_controller.get_unpaid_invoices)
+    app.route('/pay_selected_sup_invoices')
+    .post(invoice_controller.pay_selected_sup_invoices)
 
 
     app.route('/starting_amount')
